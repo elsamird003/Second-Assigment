@@ -3,13 +3,8 @@ from torch import nn
 from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import ToTensor
- ## add data loaders
- ## learning rates
- ## we care about the accuracy 
-# Get cpu, gpu or mps device for training.
 
-## Finish up the code for trainng
-## learning rate should be .01
+# Get cpu, gpu or mps device for training.
 device = (
     "cuda"
     if torch.cuda.is_available()
@@ -19,13 +14,32 @@ device = (
 )
 print(f"Using {device} device")
 
-# Define model
+# Load FashionMNIST dataset
+train_data = datasets.FashionMNIST(
+    root="data",
+    train=True,
+    download=True,
+    transform=ToTensor(),
+)
+test_data = datasets.FashionMNIST(
+    root="data",
+    train=False,
+    download=True,
+    transform=ToTensor(),
+)
+
+# Create data loaders
+batch_size = 64
+train_dataloader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
+test_dataloader = DataLoader(test_data, batch_size=batch_size, shuffle=False)
+
+# Define the model
 class NeuralNetwork(nn.Module):
     def __init__(self):
         super().__init__()
         self.flatten = nn.Flatten()
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(28*28, 512),
+            nn.Linear(28 * 28, 512),
             nn.ReLU(),
             nn.Linear(512, 512),
             nn.ReLU(),
@@ -33,7 +47,7 @@ class NeuralNetwork(nn.Module):
             nn.ReLU(),
             nn.Linear(256, 128),
             nn.ReLU(),
-            nn.Linear(128, 10)
+            nn.Linear(128, 10),
         )
 
     def forward(self, x):
@@ -44,13 +58,11 @@ class NeuralNetwork(nn.Module):
 model = NeuralNetwork().to(device)
 print(model)
 
-
-##Optimizing the Model Parameters
+# Define loss function and optimizer
 loss_fn = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
+optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
 
-
-## 
+# Define training function
 def train(dataloader, model, loss_fn, optimizer):
     size = len(dataloader.dataset)
     model.train()
@@ -62,15 +74,15 @@ def train(dataloader, model, loss_fn, optimizer):
         loss = loss_fn(pred, y)
 
         # Backpropagation
+        optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        optimizer.zero_grad()
 
         if batch % 100 == 0:
             loss, current = loss.item(), (batch + 1) * len(X)
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
-## We also check the model’s performance against the test dataset to ensure it is learning.
+# Define testing function
 def test(dataloader, model, loss_fn):
     size = len(dataloader.dataset)
     num_batches = len(dataloader)
@@ -86,11 +98,10 @@ def test(dataloader, model, loss_fn):
     correct /= size
     print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
 
-
+# Train and evaluate the model
 epochs = 5
-# for t in range(epochs):
-#     print(f"Epoch {t+1}\n-------------------------------")
-#     train(train_dataloader, model, loss_fn, optimizer)
-#     test(test_dataloader, model, loss_fn)
-# print("Done!")
-
+for t in range(epochs):
+    print(f"Epoch {t+1}\n-------------------------------")
+    train(train_dataloader, model, loss_fn, optimizer)
+    test(test_dataloader, model, loss_fn)
+print("Done!")
