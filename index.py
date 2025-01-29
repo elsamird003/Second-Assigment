@@ -12,7 +12,7 @@ device = (
     if torch.backends.mps.is_available()
     else "cpu"
 )
-print(f"Using {device} device")
+##print(f"Using {device} device")
 
 # Load FashionMNIST dataset
 train_data = datasets.FashionMNIST(
@@ -56,7 +56,7 @@ class NeuralNetwork(nn.Module):
         return logits
 
 model = NeuralNetwork().to(device)
-print(model)
+##print(model)
 
 # Define loss function and optimizer
 loss_fn = nn.CrossEntropyLoss()
@@ -99,9 +99,9 @@ def test(dataloader, model, loss_fn):
     print(f"Test Error: \n Accuracy: {(100*correct):>0.1f}%, Avg loss: {test_loss:>8f} \n")
 
 # Train and evaluate the model
-epochs = 5
-for t in range(epochs):
-    print(f"Epoch {t+1}\n-------------------------------")
+epochs = [5, 10, 15, 20,25,30]
+for t in epochs:
+    print(f"Epoch {t}\n-------------------------------")
     train(train_dataloader, model, loss_fn, optimizer)
     test(test_dataloader, model, loss_fn)
 print("Done!")
